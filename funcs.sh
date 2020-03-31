@@ -1013,6 +1013,7 @@ jlcd_start(){
         sed -i "/$JL_casper/d" extracted/"$JL_casper"/filesystem.manifest-desktop
     fi
     rm -f extracted/"$JL_squashfs"
+    #rm -f extracted/"$JL_squashfs.tmp"
 	msg_out "Deleted old squashfs.."
 	msg_out "Rebuilding squashfs.."
 	if [ "$fastcomp" = Y ] || [ "$fastcomp" = y ];then
@@ -1022,6 +1023,8 @@ jlcd_start(){
 	  msg_out "Using exhaustive compression. Size may become lesser"
 	  #mksquashfs edit extracted/"$JL_squashfs" -comp xz || err_exit "mksquashfs failed!"
 	  mksquashfs edit extracted/"$JL_squashfs" -comp xz -e edit/boot || err_exit "mksquashfs failed!"
+	  #/usr/local/JLIVECD/crypt-squashfs.sh extracted/"$JL_squashfs.tmp" extracted/"$JL_squashfs"
+	  #rm extracted/"$JL_squashfs.tmp"
 	fi
     if ! $JL_archlinux; then
         printf $(du -sx --block-size=1 edit | cut -f1) > extracted/"$JL_casper"/filesystem.size
@@ -1048,7 +1051,7 @@ jlcd_start(){
         else
             efi_img=EFI/archiso/efiboot.img
         fi
-		genisoimage -U -A "$IMAGENAME" -V "$IMAGENAME" -volset "$IMAGENAME" -J -joliet-long -D -r -v -T -o ../"$cdname".iso -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e "$efi_img" -no-emul-boot . && msg_out 'Prepared UEFI image'
+		xorrisofs -U -A "$IMAGENAME" -V "$IMAGENAME" -volset "$IMAGENAME" -J -joliet-long -D -r -v -T -o ../"$cdname".iso -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e "$efi_img" -no-emul-boot . && msg_out 'Prepared UEFI image'
 		uefi_opt=--uefi
 	else
 		genisoimage -D -r -V "$IMAGENAME" -cache-inodes -J -no-emul-boot -boot-load-size 4 -boot-info-table -l -b isolinux/isolinux.bin -c isolinux/boot.cat -o ../"$cdname".iso .
